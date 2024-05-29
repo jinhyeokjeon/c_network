@@ -27,20 +27,26 @@ int main(int argc, char *argv[]) {
         error_handling("socket() error");
 
     memset(&serv_addr, 0, sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET; // IPv4 인터넷 프로토콜에 적용하는 주소체계.
+    serv_addr.sin_family = AF_INET;                // IPv4 인터넷 프로토콜에 적용하는 주소체계.
     serv_addr.sin_addr.s_addr = htonl(INADDR_ANY); // 32비트 IP주소정보 저장. host-to-network: long data big-endian 방식으로 변환. (네트워크에서는 big-endian 통일). INADDR_ANY: IP주소 자동으로 할당.
-    serv_addr.sin_port = htons(atoi(argv[1])); // 16비트 포트번호 저장. host-to-network: short data big-endian 방식으로 변환.
+    serv_addr.sin_port = htons(atoi(argv[1]));     // 16비트 포트번호 저장. host-to-network: short data big-endian 방식으로 변환.
 
-    // bind함수는 sockaddr 구조체의 주소 정보를 원한다. 
+    // bind함수는 sockaddr 구조체의 주소 정보를 원한다.
     // bind함수는 sockaddr의 값을 채우고 남은 부분은 0으로 채울 것을 요구한다.
-    // 이러한 조건에 맞추어 IPv4 주소를 sockaddr의 값을 채우는 것은 어렵기 때문에, 
+    // 이러한 조건에 맞추어 IPv4 주소를 sockaddr의 값을 채우는 것은 어렵기 때문에,
     // sockaddr_in이 등장하였고, sockaddr에는 IPv4의 주소정보만 담기 위한것이 아니기 때문에 sin_family에 AF_INET 을 저장해야 한다.
-    if (bind(serv_sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1) 
+    if (bind(serv_sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1)
         error_handling("bind() error");
 
+    // 연결요청 대기상태. (연결요청 대기상태에 두고자 하는 소켓의 파일 디스크립터, 연결요청 대기 큐의 크기)
+    // 5가 전달되면 클라이언트의 연결요청을 5개까지 대기시킬 수 있다.
     if (listen(serv_sock, 5) == -1)
         error_handling("listen() error");
 
+    // (서버 소켓의 파일 디스크립터, 연결요청한 클라이언트의 주소정보 담을 변수의 주솟값, 두번째 인자로 전달된 주소의  변수 크기. 함수호출이 완료되면 클라이언트의 주소정보길이가 계산되어 채워짐.)
+    // accept 함수는 '연결요청 대기 큐'에서 대기중인 클라이언트의 연결 요청을 수락하는 기능.
+    // accept 함수는 호출 성공 시 내부적으로 데이터 입출력에 사용할 소켓을 생성하고, 그 소켓의 파일 디스크립터 반환.
+    // accept 함수는 대기 큐가 찰 때까지, 즉 클라이언트의 연결요청이 들어올 때까지 반환하지 않는다.
     clnt_addr_size = sizeof(clnt_addr);
     clnt_sock = accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);
     if (clnt_sock == -1)
