@@ -10,9 +10,9 @@ void error_handling(char *message);
 
 int main(int argc, char *argv[]) {
     int sock;
-    struct sockaddr_in serv_addr;
+    int str_len, recv_len, recv_cnt;
     char message[BUF_SIZE];
-    int str_len;
+    struct sockaddr_in serv_addr;
 
     if (argc != 3) {
         printf("Usage: %s <IP> <port>\n", argv[0]);
@@ -40,8 +40,15 @@ int main(int argc, char *argv[]) {
         if (!strcmp(message, "q\n") || !strcmp(message, "Q\n"))
             break;
 
-        write(sock, message, strlen(message) + 1);
-        str_len = read(sock, message, BUF_SIZE); // 데이터의 모든 조각이 전송되지 않았음에도, read 함수 호출을 통해 문자열의 일부만 저장될 수도 있는 잘못된 코드.
+        str_len = write(sock, message, strlen(message) + 1);
+        recv_len = 0;
+
+        while (recv_len < str_len) {
+            recv_cnt = read(sock, &message[recv_len], BUF_SIZE - recv_len);
+            if (recv_cnt == -1)
+                error_handling("read() error!");
+            recv_len += recv_cnt;
+        }
         printf("Message from server: %s", message);
     }
     close(sock);
