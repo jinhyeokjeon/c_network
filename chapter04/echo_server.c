@@ -46,11 +46,11 @@ int main(int argc, char *argv[]) {
         else
             printf("Connected client %d\n", i + 1);
 
-        while ((str_len = read(clnt_sock, message, BUF_SIZE)) != 0) {
+        while ((str_len = read(clnt_sock, message, BUF_SIZE)) != 0) { // FIN 메시지 수신 시 read 0 반환
             printf("len: %d\n", str_len);
             write(clnt_sock, message, str_len);
         }
-        close(clnt_sock);
+        close(clnt_sock); // FIN 메시지 수신 이후 FIN 메세지 전송
     }
     close(serv_sock);
     return 0;

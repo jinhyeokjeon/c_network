@@ -41,6 +41,8 @@ int main(int argc, char *argv[]) {
             break;
 
         str_len = write(sock, message, strlen(message) + 1);
+        if (str_len == -1)
+            error_handling("write() error!");
         recv_len = 0;
 
         while (recv_len < str_len) {
@@ -51,7 +53,7 @@ int main(int argc, char *argv[]) {
         }
         printf("Message from server: %s", message);
     }
-    close(sock); // 상대방에게 FIN 메시지 전송
+    close(sock);
     return 0;
 }
 
